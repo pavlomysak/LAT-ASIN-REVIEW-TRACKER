@@ -30,13 +30,13 @@ options.add_argument("--remote-debugging-port=9222")
 options.binary_location = "/usr/bin/chromium"
 
 
-@st.cache_resource
-def load_sentiment_analyzer():
-    return pipeline("sentiment-analysis", model='siebert/sentiment-roberta-large-english')
+#@st.cache_resource
+#def load_sentiment_analyzer():
+#    return pipeline("sentiment-analysis", model='siebert/sentiment-roberta-large-english')
 
-@st.cache_resource
-def load_summarizer():
-    return pipeline("summarization", model="facebook/bart-large-cnn")
+#@st.cache_resource
+#def load_summarizer():
+#    return pipeline("summarization", model="facebook/bart-large-cnn")
 
 def run_analysis(ASIN):
 
@@ -66,42 +66,15 @@ def run_analysis(ASIN):
 
             time.sleep(2) 
             
-            page_number = page_number + 1
+            page_number += 1
         except TimeoutException:
             st.warning(f"Timed out waiting for page {page_number} to load.")
             break
 
     driver.quit()
 
-    # Load sentiment analysis and summarization models
-    sentiment_analyzer = load_sentiment_analyzer()
-    summarizer = load_summarizer()
-    
-    good_reviews = []
-    bad_reviews = []
-
-    # Categorize reviews based on sentiment
-    for review in all_revs:
-        sentiment = sentiment_analyzer(review)[0]
-        # Check sentiment label
-        if sentiment['label'] == 'POSITIVE':
-            good_reviews.append(review)
-        else:
-            bad_reviews.append(review)
-
-
-    def chunk_text(text, max_length=3000):
-        return [text[i:i+max_length] for i in range(0, len(text), max_length)]
-    
-    good_summary = summarizer(''.join(good_reviews), max_length=250, min_length=10)[0]['summary_text']
-    bad_summary = summarizer(''.join(bad_reviews), max_length=250, min_length=10)[0]['summary_text']
-    
-    st.write("Final Summary of Good Reviews:")
-    st.write(good_summary)
-
-    st.write("Final Summary of Bad Reviews:")
-    st.write(bad_summary)
-
+    st.write(all_revs)
+ 
 with st.form(key="my_form"):
     asin_value = st.text_input("ASIN", key="ASIN")
     submit_button = st.form_submit_button("Run Analysis")
